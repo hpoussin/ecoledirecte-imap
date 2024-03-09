@@ -2,6 +2,7 @@ pub mod api;
 pub mod auth;
 pub mod fetch;
 pub mod mailbox;
+pub mod status;
 
 use imap_codec::imap_types::{core::NonEmptyVec, response::Capability};
 

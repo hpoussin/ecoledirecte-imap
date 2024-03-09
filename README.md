@@ -21,6 +21,7 @@ Commands implémentées (± par ordre de priorité) :
  - [ ] List: Il reste la logique de tri à implémenter
  - [x] Select
  - [x] Fetch
+ - [x] Status
  - [x] Close
  - [ ] Examine
  - [ ] Create

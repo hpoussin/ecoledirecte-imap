@@ -29,6 +29,7 @@ use ecoledirecte_imap::auth;
 use ecoledirecte_imap::capabilities;
 use ecoledirecte_imap::fetch;
 use ecoledirecte_imap::mailbox;
+use ecoledirecte_imap::status;
 use api::MailboxId;
 
 struct Connection<'a> {
@@ -418,8 +419,25 @@ fn process<'a>(
             }
             StatusCommand {
                 mailbox,
-                item_names,
-            } => todo!("STATUS {:?} {:?}", mailbox, item_names),
+                item_names: _,
+            } => {
+                let user = connection.user.as_ref().unwrap();
+                let mailbox_id = connection.folders.as_ref().unwrap().get(match mailbox {
+                    Mailbox::Inbox => "INBOX",
+                    Mailbox::Other(ref mailbox) => str::from_utf8(mailbox.as_ref()).unwrap(),
+                });
+                return match mailbox_id {
+                    Some(mailbox_id) => status::handle(
+                        command.tag,
+                        mailbox,
+                        mailbox_id,
+                        api::get_folder_info(client, mailbox_id, user.id, &user.token)),
+                    None => vec![
+                        Response::Status(
+                            Status::no(Some(command.tag), None, "STATUS No such mailbox!").unwrap())
+                    ],
+                }
+            },
             _ => (),
         }
     }
