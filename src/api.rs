@@ -5,6 +5,8 @@ use reqwest::{
 };
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use crate::auth::UserId;
+use crate::auth::UserId::{Eleve, Famille};
 
 const API_VERSION: &str = "4.43.0";
 
@@ -31,7 +33,7 @@ pub fn login(
     client: &Client,
     username: &str,
     password: &str,
-) -> Result<(u32, String), Option<String>> {
+) -> Result<(UserId, String), Option<String>> {
     let request = build_request(
         client,
         "",
@@ -46,12 +48,18 @@ pub fn login(
     let response: Value = request.send().unwrap().json().unwrap();
 
     if response["code"] == json!(200) {
+        let user_id = response["data"]["accounts"][0]["id"]
+            .as_u64()
+            .unwrap()
+            .try_into()
+            .unwrap();
+        let user = if response["data"]["accounts"][0]["typeCompte"] == "1" {
+            Famille(user_id)
+        } else {
+            Eleve(user_id)
+        };
         Ok((
-            response["data"]["accounts"][0]["id"]
-                .as_u64()
-                .unwrap()
-                .try_into()
-                .unwrap(),
+            user,
             response["token"].as_str().unwrap().to_string(),
         ))
     } else {
@@ -59,12 +67,16 @@ pub fn login(
     }
 }
 
-pub fn get_folder_info(client: &Client, mailbox_id: u32, user_id: u32, token: &str) -> Value {
+pub fn get_folder_info(client: &Client, mailbox_id: u32, user_id: UserId, token: &str) -> Value {
     let mailbox_id = mailbox_id.to_string();
+    let url = match user_id {
+        Eleve(user_id) => format!("/v3/eleves/{user_id}/messages.awp"),
+        Famille(user_id) => format!("/v3/familles/{user_id}/messages.awp"),
+    };
     let request = build_request(
         client,
         "get",
-        &format!("/v3/eleves/{user_id}/messages.awp"),
+        &url,
         {
             let mut qs = HashMap::<&str, &str>::new();
             qs.insert("idClasseur", &mailbox_id);
@@ -76,8 +88,8 @@ pub fn get_folder_info(client: &Client, mailbox_id: u32, user_id: u32, token: &s
     request.send().unwrap().json::<Value>().unwrap()["data"].take()
 }
 
-pub fn get_folders(client: &Client, id: u32, token: &str) -> Vec<(String, u32)> {
-    get_folder_info(client, 0, id, token)["classeurs"]
+pub fn get_folders(client: &Client, user_id: UserId, token: &str) -> Vec<(String, u32)> {
+    get_folder_info(client, 0, user_id, token)["classeurs"]
         .as_array()
         .unwrap()
         .into_iter()

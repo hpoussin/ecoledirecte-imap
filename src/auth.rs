@@ -8,9 +8,15 @@ use std::str;
 
 use crate::capabilities;
 
+#[derive(Clone, Copy)]
+pub enum UserId {
+    Eleve(u32),
+    Famille(u32),
+}
+
 #[derive(Clone)]
 pub struct User {
-    pub id: u32,
+    pub id: UserId,
     pub token: String,
 }
 
@@ -46,7 +52,7 @@ pub fn parse_plain_message<'a, 'b>(
 // Pas sûr de comment il faut nommer cette fonction puisqu'elle ne fait que
 // traduire le résultat de l'API en action concrètes dans le système.
 pub fn translate(
-    authentification_result: Result<(u32, String), Option<String>>,
+    authentification_result: Result<(UserId, String), Option<String>>,
     tag: Tag,
 ) -> (State<'static>, Option<User>, Vec<Response<'_>>) {
     match authentification_result {
