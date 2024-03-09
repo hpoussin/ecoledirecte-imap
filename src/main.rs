@@ -28,6 +28,7 @@ use ecoledirecte_imap::api;
 use ecoledirecte_imap::auth;
 use ecoledirecte_imap::capabilities;
 use ecoledirecte_imap::fetch;
+use ecoledirecte_imap::lsub;
 use ecoledirecte_imap::mailbox;
 use ecoledirecte_imap::status;
 use ecoledirecte_imap::store;
@@ -379,6 +380,12 @@ fn process<'a>(
             Create { mailbox } => todo!("CREATE {:?}", mailbox),
             Delete { mailbox } => todo!("DELETE {:?}", mailbox),
             Rename { from, to } => todo!("RENAME {:?} {:?}", from, to),
+            Lsub {
+                reference,
+                mailbox_wildcard
+            } => {
+                return lsub::handle(command.tag, reference, mailbox_wildcard);
+            },
             List {
                 reference,
                 mailbox_wildcard,

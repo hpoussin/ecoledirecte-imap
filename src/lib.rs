@@ -1,6 +1,7 @@
 pub mod api;
 pub mod auth;
 pub mod fetch;
+pub mod lsub;
 pub mod mailbox;
 pub mod status;
 pub mod store;

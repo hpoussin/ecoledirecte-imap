@@ -24,6 +24,7 @@ Commands implémentées (± par ordre de priorité) :
  - [x] Status
  - [x] Close
  - [x] Store
+ - [x] Lsub
  - [ ] Examine
  - [ ] Create
  - [ ] Delete
