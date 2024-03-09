@@ -56,7 +56,7 @@ pub fn mailbox_info<'a>(mailbox_id: &MailboxId, folder: Value) -> Vec<Response<'
     .unwrap();
 
     let mut response = vec![
-        Response::Data(Data::Flags(vec![Flag::Seen, Flag::Answered])),
+        Response::Data(Data::Flags(vec![Flag::Seen, Flag::Answered, Flag::Draft])),
         Response::Data(Data::Exists(existing_messages_count)),
         Response::Data(Data::Recent(0)),
         Response::Status(

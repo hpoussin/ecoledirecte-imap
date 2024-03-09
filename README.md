@@ -20,7 +20,7 @@ Commands implémentées (± par ordre de priorité) :
  - [x] Logout
  - [ ] List: Il reste la logique de tri à implémenter
  - [x] Select
- - [ ] Fetch
+ - [x] Fetch
  - [x] Close
  - [ ] Examine
  - [ ] Create

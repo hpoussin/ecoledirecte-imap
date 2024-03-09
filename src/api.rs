@@ -103,6 +103,72 @@ pub fn get_folder_info(client: &Client, mailbox_id: &MailboxId, user_id: UserId,
     request.send().unwrap().json::<Value>().unwrap()["data"].take()
 }
 
+pub fn get_messages(client: &Client, id: UserId, token: &str, mailbox_id: &MailboxId) -> Vec<(u32, serde_json::Value)> {
+    let category = match mailbox_id {
+        MailboxId::Received(_id) => "received",
+        MailboxId::Sent => "sent",
+        MailboxId::Draft => "draft",
+        MailboxId::Archived => "archived",
+    };
+    get_folder_info(client, mailbox_id, id, token)["messages"][category]
+        .as_array()
+        .unwrap()
+        .into_iter()
+        .map(|message| {
+            (
+                message["id"].as_u64().unwrap() as u32,
+                message.clone(),
+            )
+        })
+        .collect()
+}
+
+pub fn get_message(client: &Client, user_id: UserId, token: &str, mailbox_id: &MailboxId, message_id: u32) -> serde_json::Value {
+    let message_id = message_id.to_string();
+    let url = match user_id {
+        Eleve(user_id) => format!("/v3/eleves/{user_id}/messages/{message_id}.awp"),
+        Famille(user_id) => format!("/v3/familles/{user_id}/messages/{message_id}.awp"),
+    };
+    let mode = match mailbox_id {
+        MailboxId::Received(_) => "destinataire",
+        MailboxId::Sent => "expediteur",
+        MailboxId::Draft => "expediteur",
+        MailboxId::Archived => todo!(),
+    };
+    let request = build_request(
+        client,
+        "get",
+        &url,
+        {
+            let mut qs = HashMap::<&str, &str>::new();
+            qs.insert("mode", mode);
+            qs
+        },
+        json!({}),
+        token,
+    );
+    request.send().unwrap().json::<Value>().unwrap()["data"].take()
+}
+
+pub fn get_attachment(client: &Client, token: &str, attachment_id: u32) -> bytes::Bytes {
+    let attachment_id = attachment_id.to_string();
+    let url = "/v3/telechargement.awp";
+    let request = build_request(
+        client,
+        "get",
+        &url,
+        {
+            let mut qs = HashMap::<&str, &str>::new();
+            qs.insert("fichierId", attachment_id.as_str());
+            qs.insert("leTypeDeFichier", "PIECE_JOINTE");
+            qs
+        },
+        json!({}),
+        token,
+    );
+    request.send().unwrap().bytes().unwrap()
+}
+
 pub fn get_folders(client: &Client, user_id: UserId, token: &str) -> Vec<(String, u32)> {
     get_folder_info(client, &MailboxId::Received(0), user_id, token)["classeurs"]
         .as_array()

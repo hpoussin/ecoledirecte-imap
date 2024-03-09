@@ -27,6 +27,7 @@ use std::thread;
 use ecoledirecte_imap::api;
 use ecoledirecte_imap::auth;
 use ecoledirecte_imap::capabilities;
+use ecoledirecte_imap::fetch;
 use ecoledirecte_imap::mailbox;
 use api::MailboxId;
 
@@ -447,13 +448,22 @@ fn process<'a>(
                 sequence_set,
                 macro_or_item_names,
                 uid,
-            } => todo!(
-                "FETCH {:?} {:?} {:?} ({:?})",
-                sequence_set,
-                macro_or_item_names,
-                uid,
-                mailbox
-            ),
+            } => {
+                let user = connection.user.as_ref().unwrap();
+                let mailbox_id = connection.folders.as_ref().unwrap().get(match mailbox {
+                    Mailbox::Inbox => "INBOX",
+                    Mailbox::Other(ref mailbox) => str::from_utf8(mailbox.as_ref()).unwrap(),
+                }).unwrap();
+                let messages = api::get_messages(client, user.id, &user.token, mailbox_id);
+                return fetch::handle(
+                    command.tag,
+                    sequence_set,
+                    macro_or_item_names,
+                    uid,
+                    messages,
+                    |message_id| api::get_message(client, user.id, &user.token, &mailbox_id, message_id),
+                    |attachment_id| api::get_attachment(client, &user.token, attachment_id));
+            }
             _ => (),
         }
     }
