@@ -27,6 +27,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
+name = "aho-corasick"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2969dcb958b36655471fc61f7e416fa76033bdd4bfed0678d8fee1e2d07a1f0"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -61,6 +70,12 @@ dependencies = [
  "object",
  "rustc-demangle",
 ]
+
+[[package]]
+name = "base64"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "base64"
@@ -165,6 +180,7 @@ dependencies = [
  "imap-codec",
  "reqwest",
  "serde_json",
+ "utf7-imap",
 ]
 
 [[package]]
@@ -424,7 +440,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6222d4417bbb3448ed620046448c3ca2b947aa349a3c1ba0ca90ebf2af56831"
 dependencies = [
  "abnf-core",
- "base64",
+ "base64 0.21.5",
  "bounded-static",
  "chrono",
  "imap-types",
@@ -439,7 +455,7 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a799ec6e315b75b5e5d72b0b1403f8c05c625b98b860bbdf19a5a4e189ae061"
 dependencies = [
- "base64",
+ "base64 0.21.5",
  "bounded-static",
  "chrono",
  "thiserror",
@@ -696,12 +712,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "regex"
+version = "1.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b62dbe01f0b06f9d8dc7d49e05a0785f153b00b2c227856282f671e0318c9b15"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-automata",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86b83b8b9847f9bf95ef68afb0b8e6cdb80f498442f5179a29fad448fcc1eaea"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
+
+[[package]]
 name = "reqwest"
 version = "0.11.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37b1ae8d9ac08420c66222fb9096fc5de435c3c48542bc5336c51892cffafb41"
 dependencies = [
- "base64",
+ "base64 0.21.5",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -1033,6 +1078,17 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+]
+
+[[package]]
+name = "utf7-imap"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e326365261fc2761f0809dfb6032810534a0427bbd8f0edf546f6afeef89f5d"
+dependencies = [
+ "base64 0.13.1",
+ "encoding_rs",
+ "regex",
 ]
 
 [[package]]

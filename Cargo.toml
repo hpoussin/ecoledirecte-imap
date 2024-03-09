@@ -10,3 +10,4 @@ chrono = "0.4.31"
 imap-codec = { version = "1.0.0", features = ["bounded-static"] }
 reqwest = { version = "0.11.22", features = ["blocking", "json"] }
 serde_json = "1.0.107"
+utf7-imap = "0.3.2"

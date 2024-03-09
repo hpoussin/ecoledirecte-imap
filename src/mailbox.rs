@@ -4,12 +4,13 @@ use imap_codec::imap_types::{
     mailbox::Mailbox,
     response::{Code, Data, Response, Status},
 };
+use utf7_imap::encode_utf7_imap;
 use serde_json::Value;
 use std::collections::HashMap;
 use crate::api::MailboxId;
 
 pub fn make_folders(folders: Vec<(String, u32)>) -> HashMap<String, MailboxId> {
-    let mut map: HashMap<_, _> = folders.into_iter().map(|(name, id)| (name, MailboxId::Received(id))).collect();
+    let mut map: HashMap<_, _> = folders.into_iter().map(|(name, id)| (encode_utf7_imap(name), MailboxId::Received(id))).collect();
     map.insert("INBOX".into(), MailboxId::Received(0));
     map.insert("Sent".into(), MailboxId::Sent);
     map.insert("Trash".into(), MailboxId::Archived);
