@@ -28,11 +28,12 @@ use ecoledirecte_imap::api;
 use ecoledirecte_imap::auth;
 use ecoledirecte_imap::capabilities;
 use ecoledirecte_imap::mailbox;
+use api::MailboxId;
 
 struct Connection<'a> {
     state: State<'a>,
     user: Option<auth::User>,
-    folders: Option<HashMap<String, u32>>,
+    folders: Option<HashMap<String, MailboxId>>,
 }
 
 impl<'a> Default for Connection<'a> {
@@ -331,10 +332,10 @@ fn process<'a>(
                     Mailbox::Other(ref mailbox) => str::from_utf8(mailbox.as_ref()).unwrap(),
                 };
                 match folders.get(name) {
-                    Some(&id) => {
+                    Some(&ref mailbox_id) => {
                         let mut response = mailbox::mailbox_info(
-                            name,
-                            api::get_folder_info(client, id, user.id, &user.token),
+                            mailbox_id,
+                            api::get_folder_info(client, mailbox_id, user.id, &user.token),
                         );
                         response.push(Response::Status(
                             Status::ok(

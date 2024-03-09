@@ -10,6 +10,13 @@ use crate::auth::UserId::{Eleve, Famille};
 
 const API_VERSION: &str = "4.43.0";
 
+pub enum MailboxId {
+    Received(u32),
+    Sent,
+    Draft,
+    Archived,
+}
+
 fn build_request<'a>(
     client: &Client,
     verbe: &'a str,
@@ -67,8 +74,14 @@ pub fn login(
     }
 }
 
-pub fn get_folder_info(client: &Client, mailbox_id: u32, user_id: UserId, token: &str) -> Value {
-    let mailbox_id = mailbox_id.to_string();
+pub fn get_folder_info(client: &Client, mailbox_id: &MailboxId, user_id: UserId, token: &str) -> Value {
+    let (type_recuperation, classeur_id) = match mailbox_id {
+        MailboxId::Received(id) => (if *id == 0 { "received" } else { "classeur" }, *id),
+        MailboxId::Sent => ("sent", 0),
+        MailboxId::Draft => ("draft", 0),
+        MailboxId::Archived => ("archived", 0),
+    };
+    let classeur_id = classeur_id.to_string();
     let url = match user_id {
         Eleve(user_id) => format!("/v3/eleves/{user_id}/messages.awp"),
         Famille(user_id) => format!("/v3/familles/{user_id}/messages.awp"),
@@ -79,7 +92,8 @@ pub fn get_folder_info(client: &Client, mailbox_id: u32, user_id: UserId, token:
         &url,
         {
             let mut qs = HashMap::<&str, &str>::new();
-            qs.insert("idClasseur", &mailbox_id);
+            qs.insert("typeRecuperation", type_recuperation);
+            qs.insert("idClasseur", &classeur_id);
             qs
         },
         json!({}),
@@ -89,7 +103,7 @@ pub fn get_folder_info(client: &Client, mailbox_id: u32, user_id: UserId, token:
 }
 
 pub fn get_folders(client: &Client, user_id: UserId, token: &str) -> Vec<(String, u32)> {
-    get_folder_info(client, 0, user_id, token)["classeurs"]
+    get_folder_info(client, &MailboxId::Received(0), user_id, token)["classeurs"]
         .as_array()
         .unwrap()
         .into_iter()

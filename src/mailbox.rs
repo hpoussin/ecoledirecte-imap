@@ -6,18 +6,19 @@ use imap_codec::imap_types::{
 };
 use serde_json::Value;
 use std::collections::HashMap;
+use crate::api::MailboxId;
 
-pub fn make_folders(folders: Vec<(String, u32)>) -> HashMap<String, u32> {
-    let mut map: HashMap<_, _> = folders.into_iter().collect();
-    map.insert("INBOX".into(), 0);
-    map.insert("Sent".into(), 0);
-    map.insert("Archived".into(), 0);
-    map.insert("Drafts".into(), 0);
+pub fn make_folders(folders: Vec<(String, u32)>) -> HashMap<String, MailboxId> {
+    let mut map: HashMap<_, _> = folders.into_iter().map(|(name, id)| (name, MailboxId::Received(id))).collect();
+    map.insert("INBOX".into(), MailboxId::Received(0));
+    map.insert("Sent".into(), MailboxId::Sent);
+    map.insert("Trash".into(), MailboxId::Archived);
+    map.insert("Drafts".into(), MailboxId::Draft);
     map
 }
 
 pub fn filter<'a>(
-    folders: &'a HashMap<String, u32>,
+    folders: &'a HashMap<String, MailboxId>,
     reference: Mailbox<'_>,
     mailbox_wildcard: &[u8],
 ) -> Vec<Response<'a>> {
@@ -33,22 +34,14 @@ pub fn filter<'a>(
         .collect()
 }
 
-pub fn mailbox_info<'a, 'b>(mailbox: &'a str, folder: Value) -> Vec<Response<'b>> {
-    let existing_messages_count = match mailbox {
-        "Sent" => &folder["pagination"]["messagesEnvoyesCount"],
-        "Archived" => &folder["pagination"]["messagesArchivesCount"],
-        "Drafts" => &folder["pagination"]["messagesDraftCount"],
-        _ => &folder["pagination"]["messagesRecusCount"],
-    }
-    .as_u64()
-    .unwrap() as u32;
-
-    let unseen_messages_count = match mailbox {
-        "Sent" => None,
-        "Archived" => None,
-        "Drafts" => None,
-        _ => folder["pagination"]["messagesRecusNotReadCount"].as_u64(),
+pub fn mailbox_info<'a>(mailbox_id: &MailboxId, folder: Value) -> Vec<Response<'a>> {
+    let (existing_messages_count, unseen_messages_count) = match mailbox_id {
+        MailboxId::Received(_) => (&folder["pagination"]["messagesRecusCount"], folder["pagination"]["messagesRecusNotReadCount"].as_u64()),
+        MailboxId::Sent => (&folder["pagination"]["messagesEnvoyesCount"], None),
+        MailboxId::Draft => (&folder["pagination"]["messagesDraftCount"], None),
+        MailboxId::Archived => (&folder["pagination"]["messagesArchivesCount"], None),
     };
+    let existing_messages_count = existing_messages_count.as_u64().unwrap() as u32;
 
     let date = Local::now().date_naive();
     // unwrap: Normalement on est après l'an 0
