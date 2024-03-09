@@ -30,6 +30,7 @@ use ecoledirecte_imap::capabilities;
 use ecoledirecte_imap::fetch;
 use ecoledirecte_imap::mailbox;
 use ecoledirecte_imap::status;
+use ecoledirecte_imap::store;
 use api::MailboxId;
 
 struct Connection<'a> {
@@ -437,6 +438,23 @@ fn process<'a>(
                             Status::no(Some(command.tag), None, "STATUS No such mailbox!").unwrap())
                     ],
                 }
+            },
+            Store {
+                sequence_set,
+                kind,
+                response,
+                flags,
+                uid,
+            } => {
+                let user = connection.user.as_ref().unwrap();
+                return store::handle(
+                    command.tag,
+                    sequence_set,
+                    kind,
+                    response,
+                    flags,
+                    uid,
+                    |message_ids, read_status| api::set_read_status(client, user.id, &user.token, read_status, message_ids));
             },
             _ => (),
         }

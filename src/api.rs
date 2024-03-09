@@ -182,3 +182,33 @@ pub fn get_folders(client: &Client, user_id: UserId, token: &str) -> Vec<(String
         })
         .collect()
 }
+
+pub fn set_read_status(client: &Client, user_id: UserId, token: &str, read_status: bool, message_ids: &Vec<u32>) {
+    match read_status {
+        true => {
+            // a) only way to mark a message as read is to request it
+            // b) only messages in INBOX can be marked as unread
+            let _ = message_ids
+                .iter()
+                .map(|message_id| get_message(client, user_id, token, &MailboxId::Received(0), *message_id));
+        },
+        false => {
+            let url = match user_id {
+                Eleve(user_id) => format!("/v3/eleves/{user_id}/messages.awp"),
+                Famille(user_id) => format!("/v3/familles/{user_id}/messages.awp"),
+            };
+            let request = build_request(
+                client,
+                "put",
+                &url,
+                HashMap::new(),
+                json!({
+                    "action": "marquerCommeNonLu",
+                    "ids": message_ids,
+                }),
+                token,
+            );
+            request.send().unwrap();
+        }
+    }
+}

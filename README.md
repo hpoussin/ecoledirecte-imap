@@ -23,6 +23,7 @@ Commands implémentées (± par ordre de priorité) :
  - [x] Fetch
  - [x] Status
  - [x] Close
+ - [x] Store
  - [ ] Examine
  - [ ] Create
  - [ ] Delete
