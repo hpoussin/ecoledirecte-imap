@@ -23,11 +23,12 @@ pub fn filter<'a>(
     reference: Mailbox<'_>,
     mailbox_wildcard: &[u8],
 ) -> Vec<Response<'a>> {
+    use imap_codec::imap_types::flag::FlagNameAttribute::Noinferiors;
     folders // TODO!!!
         .keys()
         .map(|folder| {
             Response::Data(Data::List {
-                items: vec![],
+                items: vec![Noinferiors],
                 delimiter: None,
                 mailbox: <Mailbox as TryFrom<&str>>::try_from(folder).unwrap(),
             })
