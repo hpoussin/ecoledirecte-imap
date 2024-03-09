@@ -94,6 +94,7 @@ pub fn get_folder_info(client: &Client, mailbox_id: &MailboxId, user_id: UserId,
             let mut qs = HashMap::<&str, &str>::new();
             qs.insert("typeRecuperation", type_recuperation);
             qs.insert("idClasseur", &classeur_id);
+            qs.insert("getAll", "1");
             qs
         },
         json!({}),
